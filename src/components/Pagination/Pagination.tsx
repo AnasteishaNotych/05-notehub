@@ -8,11 +8,14 @@ interface PaginationProps {
   onPageChange: (selectedItem: { selected: number }) => void;
 }
 
-const ResolvedPaginate = ((
-  ReactPaginate as unknown as {
-    default?: React.ComponentType<ReactPaginateProps>;
-  }
-).default || ReactPaginate) as React.ComponentType<ReactPaginateProps>;
+const rawImport = ReactPaginate as unknown;
+
+const ResolvedPaginate = (
+  typeof rawImport === "function"
+    ? rawImport
+    : (rawImport as { default: React.ComponentType<ReactPaginateProps> })
+        .default
+) as React.ComponentType<ReactPaginateProps>;
 
 function Pagination({ pageCount, forcePage, onPageChange }: PaginationProps) {
   return (
