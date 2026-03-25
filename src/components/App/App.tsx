@@ -1,7 +1,12 @@
 import css from "./App.module.css";
 import NoteList from "../NoteList/NoteList";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote, deleteNote, fetchNotes } from "../../services/noteService";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
+import { createNote, fetchNotes } from "../../services/noteService";
 import { useState } from "react";
 import SearchBox from "../SearchBox/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
@@ -16,12 +21,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
-  const deleteMutation = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-    },
-  });
+
   const createMutation = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
@@ -41,11 +41,13 @@ function App() {
     debouncedSearch(value);
   };
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error, isPlaceholderData } = useQuery({
     queryKey: ["notes", page, search],
     queryFn: () => fetchNotes(page, 12, search),
+    placeholderData: keepPreviousData,
   });
-  if (isLoading) return <p>Loading is proceed, please wait</p>;
+  if (isLoading && !isPlaceholderData)
+    return <p>Loading is proceed, please wait</p>;
   if (isError)
     return (
       <p>
@@ -61,7 +63,7 @@ function App() {
         {data && data.totalPages > 1 && (
           <Pagination
             pageCount={data.totalPages}
-            forcePage={page}
+            forcePage={page - 1}
             onPageChange={(selectedItem) => setPage(selectedItem.selected + 1)}
           />
         )}
@@ -71,16 +73,18 @@ function App() {
       </header>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <NoteForm
-          onSubmit={(values) => createMutation.mutate(values)}
+          onSubmit={(values, actions) =>
+            createMutation.mutate(values, {
+              onSuccess: () => {
+                actions.resetForm();
+              },
+            })
+          }
           onCancel={() => setIsModalOpen(false)}
+          isLoading={createMutation.isPending}
         />
       </Modal>
-      {data && (
-        <NoteList
-          notes={data?.notes}
-          onDelete={(id) => deleteMutation.mutate(id)}
-        />
-      )}
+      {data && <NoteList notes={data?.notes} />}
     </div>
   );
 }

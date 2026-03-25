@@ -1,5 +1,5 @@
 import css from "./NoteForm.module.css";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, type FormikHelpers } from "formik";
 import * as Yup from "yup";
 import type { NoteTag } from "../../types/note";
 
@@ -15,21 +15,24 @@ const validationSchema = Yup.object({
 });
 
 interface NoteFormProps {
-  onSubmit: (values: { title: string; content: string; tag: NoteTag }) => void;
+  onSubmit: (
+    values: { title: string; content: string; tag: NoteTag },
+    actions: FormikHelpers<{ title: string; content: string; tag: NoteTag }>,
+  ) => void;
   onCancel: () => void;
+  isLoading?: boolean;
 }
 
-function NoteForm({ onSubmit, onCancel }: NoteFormProps) {
+function NoteForm({ onSubmit, onCancel, isLoading }: NoteFormProps) {
   return (
     <Formik
       initialValues={{ title: "", content: "", tag: "Todo" as NoteTag }}
       validationSchema={validationSchema}
-      onSubmit={(values, { resetForm }) => {
-        onSubmit(values);
-        resetForm();
+      onSubmit={(values, actions) => {
+        onSubmit(values, actions);
       }}
     >
-      {({ isSubmitting }) => (
+      {() => (
         <Form className={css.form}>
           <div className={css.formGroup}>
             <label htmlFor="title">Title</label>
@@ -75,9 +78,9 @@ function NoteForm({ onSubmit, onCancel }: NoteFormProps) {
             <button
               type="submit"
               className={css.submitButton}
-              disabled={isSubmitting}
+              disabled={isLoading}
             >
-              Create note
+              {isLoading ? "Creating" : "Create note"}
             </button>
           </div>
         </Form>
