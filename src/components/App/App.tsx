@@ -23,8 +23,7 @@ function App() {
     },
   });
   const createMutation = useMutation({
-    mutationFn: (newNote: { title: string; content: string; tag: string }) =>
-      createNote(newNote),
+    mutationFn: createNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       setIsModalOpen(false);
@@ -72,7 +71,7 @@ function App() {
       </header>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <NoteForm
-          onSubmit={(values) => createMutation.mutate(values as any)}
+          onSubmit={(values) => createMutation.mutate(values)}
           onCancel={() => setIsModalOpen(false)}
         />
       </Modal>
