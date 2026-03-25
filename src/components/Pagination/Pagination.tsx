@@ -8,11 +8,9 @@ interface PaginationProps {
 }
 
 function Pagination({ pageCount, forcePage, onPageChange }: PaginationProps) {
-  const Paginate = (ReactPaginate as any).default
-    ? (ReactPaginate as any).default
-    : ReactPaginate;
+  const PaginateComponent = (ReactPaginate as any).default || ReactPaginate;
   return (
-    <Paginate
+    <PaginateComponent
       containerClassName={css.pagination}
       activeClassName={css.active}
       onPageChange={onPageChange}

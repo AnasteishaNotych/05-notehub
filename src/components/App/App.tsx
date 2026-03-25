@@ -14,20 +14,20 @@ function App() {
   const [search, setSearch] = useState("");
   const [input, setInput] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const createMutation = useMutation({
-    mutationFn: (newNote: { title: string; content: string; tag: string }) =>
-      createNote(newNote),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      setIsModalOpen(false);
-    },
-  });
 
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
     mutationFn: deleteNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+  });
+  const createMutation = useMutation({
+    mutationFn: (newNote: { title: string; content: string; tag: string }) =>
+      createNote(newNote),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      setIsModalOpen(false);
     },
   });
 
@@ -72,7 +72,7 @@ function App() {
       </header>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <NoteForm
-          onSubmit={(values) => createMutation.mutate(values)}
+          onSubmit={(values) => createMutation.mutate(values as any)}
           onCancel={() => setIsModalOpen(false)}
         />
       </Modal>
