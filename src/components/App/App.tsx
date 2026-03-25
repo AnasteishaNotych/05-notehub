@@ -1,11 +1,6 @@
 import css from "./App.module.css";
 import NoteList from "../NoteList/NoteList";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  keepPreviousData,
-} from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { createNote, fetchNotes } from "../../services/noteService";
 import { useState } from "react";
 import SearchBox from "../SearchBox/SearchBox";
@@ -19,16 +14,6 @@ function App() {
   const [search, setSearch] = useState("");
   const [input, setInput] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const queryClient = useQueryClient();
-
-  const createMutation = useMutation({
-    mutationFn: createNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      setIsModalOpen(false);
-    },
-  });
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setSearch(value);
@@ -72,17 +57,7 @@ function App() {
         </button>
       </header>
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <NoteForm
-          onSubmit={(values, actions) =>
-            createMutation.mutate(values, {
-              onSuccess: () => {
-                actions.resetForm();
-              },
-            })
-          }
-          onCancel={() => setIsModalOpen(false)}
-          isLoading={createMutation.isPending}
-        />
+        <NoteForm onCancel={() => setIsModalOpen(false)} />
       </Modal>
       {data && <NoteList notes={data?.notes} />}
     </div>
